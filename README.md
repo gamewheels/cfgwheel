@@ -10,7 +10,7 @@ Getting Started
 To start using cfgwheel, install Go and run `go get`:
 
 ```cmd
-> go get -u github.com/gamewheel/cfgwheel
+> go get -u github.com/gamewheels/cfgwheel
 ```
 
 This will retrieve the library.
