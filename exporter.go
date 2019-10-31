@@ -18,16 +18,25 @@ var cfgMap = cfgdef.NewCfgMap()
 
 // loadXlsList 加载Excel配置文件列表
 func loadXlsList(pathname string) {
-	all, _ := ioutil.ReadDir(pathname)
-	for _, f := range all {
-		fn := f.Name()
-		ext := strings.ToLower(path.Ext(fn))
-		if f.IsDir() {
-			loadXlsList(pathname + fn)
-		} else if !strings.HasPrefix(fn, "~$") &&
-			(ext == ".xls" || ext == ".xlsx") {
-			xlsMap[len(xlsMap)] = pathname + fn
+	fileInfo, err := os.Stat(pathname)
+	if err != nil {
+		return
+	}
+
+	if fileInfo.IsDir() {
+		all, _ := ioutil.ReadDir(pathname)
+		for _, f := range all {
+			fn := f.Name()
+			ext := strings.ToLower(path.Ext(fn))
+			if f.IsDir() {
+				loadXlsList(pathname + "/" + fn)
+			} else if !strings.HasPrefix(fn, "~$") &&
+				(ext == ".xls" || ext == ".xlsx") {
+				xlsMap[len(xlsMap)] = pathname + "/" + fn
+			}
 		}
+	} else {
+		xlsMap[len(xlsMap)] = pathname
 	}
 }
 
@@ -198,14 +207,14 @@ func genCode(gen cfgdef.Generator) {
 		filename := gen.GenFileName(n)
 		if filename != "" {
 			fmt.Println("生成:", n, "...")
-			saveToFile(cfgdef.ExportFlags.OutputPath+filename, gen.GenEnum(n))
+			saveToFile(cfgdef.ExportFlags.OutputPath+"/"+filename, gen.GenEnum(n))
 		}
 	}
 	for n := range cfgMap.TableMap {
 		filename := gen.GenFileName(n)
 		if filename != "" {
 			fmt.Println("生成:", n, "...")
-			saveToFile(cfgdef.ExportFlags.OutputPath+filename, gen.GenTable(n))
+			saveToFile(cfgdef.ExportFlags.OutputPath+"/"+filename, gen.GenTable(n))
 		}
 	}
 }
