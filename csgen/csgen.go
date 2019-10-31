@@ -150,10 +150,10 @@ func (gen *CSGen) GenTable(name string) string {
 					buff2.WriteString("\r\n\t\t\t" + relateName + " = new " + field.FTable + "Struct[" + field.Name + ".Length];")
 					buff2.WriteString("\r\n\t\t\tfor (int i = 0; i < " + field.Name + ".Length; ++i)")
 					buff2.WriteString("\r\n\t\t\t{")
-					buff2.WriteString("\r\n\t\t\t\t" + relateName + "[i] = TableFacade." + field.FTable + "Table[" + field.Name + "[i]];")
+					buff2.WriteString("\r\n\t\t\t\t" + relateName + "[i] = Facade." + field.FTable + "Table[" + field.Name + "[i]];")
 					buff2.WriteString("\r\n\t\t\t}")
 				} else {
-					buff2.WriteString("\r\n\t\t\t" + relateName + " = TableFacade." + field.FTable + "Table[" + field.Name + "];")
+					buff2.WriteString("\r\n\t\t\t" + relateName + " = Facade." + field.FTable + "Table[" + field.Name + "];")
 				}
 			}
 		}
@@ -168,13 +168,13 @@ func (gen *CSGen) GenTable(name string) string {
 	buff.WriteString("\r\n\t}")
 
 	if isTable {
-		buff.WriteString("\r\n\r\n\tpublic partial class TableFacade")
+		buff.WriteString("\r\n\r\n\tpublic partial class Facade")
 		buff.WriteString("\r\n\t{")
 		buff.WriteString("\r\n\t\tpublic static DataTable<" + getTypeName(keyField) + ", " + structName + "> " +
 			name + " = DataTable<" + getTypeName(keyField) + ", " + structName + ">.Instance;")
 		buff.WriteString("\r\n\t}")
 	} else if isSettings {
-		buff.WriteString("\r\n\r\n\tpublic partial class TableFacade")
+		buff.WriteString("\r\n\r\n\tpublic partial class Facade")
 		buff.WriteString("\r\n\t{")
 		buff.WriteString("\r\n\t\tpublic static " + structName + " " + name + ";")
 		buff.WriteString("\r\n\t}")
