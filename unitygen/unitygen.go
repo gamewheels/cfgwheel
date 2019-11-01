@@ -169,12 +169,14 @@ func (gen *UnityGen) GenTable(name string) string {
 	if isTable {
 		buff.WriteString("\r\n\r\n\tpublic partial class Facade")
 		buff.WriteString("\r\n\t{")
+		buff.WriteString(genSummary(tableDef.Desc, "\r\n\t\t"))
 		buff.WriteString("\r\n\t\tpublic static DataTable<" + getTypeName(keyField) + ", " + structName + "> " +
 			name + " = DataTable<" + getTypeName(keyField) + ", " + structName + ">.Instance;")
 		buff.WriteString("\r\n\t}")
 	} else if isSettings {
 		buff.WriteString("\r\n\r\n\tpublic partial class Facade")
 		buff.WriteString("\r\n\t{")
+		buff.WriteString(genSummary(tableDef.Desc, "\r\n\t\t"))
 		buff.WriteString("\r\n\t\tpublic static " + structName + " " + name + ";")
 		buff.WriteString("\r\n\t}")
 	}
