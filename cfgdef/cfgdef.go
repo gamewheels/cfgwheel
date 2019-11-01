@@ -8,6 +8,7 @@ var ExportFlags = struct {
 	GoPath     string
 	CPPPath    string
 	CSPath     string
+	UCSPath    string
 	UseFor     string
 }{}
 
