@@ -76,7 +76,7 @@ func loadEnumCfg(sheet *xlsx.Sheet) {
 func loadTableCfg(sheet *xlsx.Sheet) {
 	name := sheet.Name
 	isTable := strings.HasSuffix(name, "Table")
-	if sheet.MaxCol < 2 || sheet.MaxRow < 5 {
+	if sheet.MaxCol < 1 || sheet.MaxRow < 5 {
 		fmt.Println("error:", name, "格式不正确")
 		return
 	}

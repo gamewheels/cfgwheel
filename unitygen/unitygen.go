@@ -93,11 +93,10 @@ func (gen *UnityGen) GenEnum(name string) string {
 	buff.WriteString(genSummary(enumDef.Desc, "\r\n\t"))
 	buff.WriteString("\r\n\tpublic enum " + name)
 	buff.WriteString("\r\n\t{")
-	name2 := name[:len(name)-4]
 	for i := 0; i < len(enumDef.Items); i++ {
 		item := enumDef.Items[i]
 		buff.WriteString(genSummary(item.Desc, "\r\n\t\t"))
-		buff.WriteString("\r\n\t\t" + name2 + item.Name + " = " + item.Value + ",")
+		buff.WriteString("\r\n\t\t" + item.Name + " = " + item.Value + ",")
 	}
 	buff.WriteString("\r\n\t}")
 	buff.WriteString("\r\n}\r\n")
