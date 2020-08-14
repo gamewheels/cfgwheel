@@ -75,3 +75,10 @@ func GetFullFieldType(typeName string) string {
 	}
 	return "?"
 }
+
+func GetFullTypeName(name string, isArray bool) string {
+	if isArray {
+		return "[]" + name
+	}
+	return name
+}

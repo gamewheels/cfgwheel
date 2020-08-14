@@ -261,6 +261,111 @@ func (gen *JSONGen) genStructFromString(s string, typeName string) string {
 	}
 	return "null"
 }
+func (gen *JSONGen) genFieldValue2(jo interface{}, field *cfgdef.FieldDef) string {
+	if field.IsArray {
+		switch jo.(type) {
+		case nil:
+			return "null"
+		case []interface{}:
+			f := &cfgdef.FieldDef{
+				Name:     field.Name,
+				Type:     field.Type,
+				IsArray:  false,
+				IsStruct: field.IsStruct,
+				UseFor:   field.UseFor,
+				FTable:   field.FTable,
+			}
+			array := jo.([]interface{})
+			var buff bytes.Buffer
+			sp := ""
+			buff.WriteString("[")
+			for _, a := range array {
+				buff.WriteString(sp + gen.genFieldValue2(a, f))
+				sp = ","
+			}
+			buff.WriteString("]")
+			return buff.String()
+		default:
+			fmt.Printf("error: line[%d] %s 转换为[]%s 失败\n", currentLine, jo, field.Type)
+			return "null"
+		}
+	}
+	if field.IsStruct {
+		def, ok := gen.cfgMap.TableMap[field.Type]
+		if !ok {
+			fmt.Println("error: ", field.Type, " 未定义")
+			return "null"
+		}
+		switch jo.(type) {
+		case nil:
+			return "null"
+		case []interface{}:
+			array := jo.([]interface{})
+			var buff bytes.Buffer
+			sp := ""
+			buff.WriteString("{")
+			for n, v := range array {
+				if n < len(def.Fields) {
+					f := def.Fields[n]
+					buff.WriteString(sp + `"` + f.Name + `":` + gen.genFieldValue2(v, f))
+					sp = ","
+				}
+			}
+			buff.WriteString("}")
+			return buff.String()
+		case map[string]interface{}:
+			data := jo.(map[string]interface{})
+			var buff bytes.Buffer
+			sp := ""
+			buff.WriteString("{")
+			for k, v := range data {
+				f := def.FieldsMap[k]
+				if def.FieldsMap[k] != nil {
+					buff.WriteString(sp + `"` + f.Name + `":` + gen.genFieldValue2(v, f))
+					sp = ","
+				}
+			}
+			buff.WriteString("}")
+			return buff.String()
+		default:
+			fmt.Printf("error: line[%d] %s 转换为%s 失败\n", currentLine, jo, field.Type)
+			return "null"
+		}
+	}
+	bytes, _ := json.Marshal(jo)
+	s := string(bytes)
+	switch field.Type {
+	case "bool":
+		return toBoolValue(s)
+	case "float32", "float64":
+		return toNumberValue(s)
+	case "int8", "int16", "int32", "int64":
+		return toIntValue(s)
+	case "uint8", "uint16", "uint32", "uint64":
+		return toUIntValue(s)
+	}
+	return s
+}
+
+func (gen *JSONGen) genObjectString(jo interface{}, structDef *cfgdef.TableDef) string {
+	switch jo.(type) {
+	case []interface{}:
+	case map[string]interface{}:
+		d := jo.(map[string]interface{})
+		var buff bytes.Buffer
+		sp := ""
+		buff.WriteString("{")
+		for _, f := range structDef.Fields {
+			if d[f.Name] != nil {
+				buff.WriteString(sp + "\"" + f.Name + "\":")
+				sp = ","
+			}
+		}
+		buff.WriteString("}")
+		return buff.String()
+	}
+	return "null"
+}
 
 // genStructValue 生成结构体
 func (gen *JSONGen) genStructValue(cols []string, structDef *cfgdef.TableDef) string {
@@ -271,16 +376,44 @@ func (gen *JSONGen) genStructValue(cols []string, structDef *cfgdef.TableDef) st
 		field := structDef.Fields[j]
 		if field.Name != "" && field.Type != "" &&
 			(field.IsKey || field.UseFor == "A" || field.UseFor == cfgdef.ExportFlags.UseFor) {
-			var value string
+			var jo interface{}
+			var bytes []byte
 			if field.IsArray {
-				value = gen.genArrayValue(cols[j], field)
-				gen.checkArray(value, field)
+				s := cfgdef.Trim(cols[j])
+				if s == "" {
+					s = "[]"
+				}
+				bytes = []byte(s)
+			} else if field.IsStruct {
+				s := cfgdef.Trim(cols[j])
+				if s == "" {
+					s = "null"
+				}
+				bytes = []byte(s)
+			} else if field.Type == "string" {
+				bytes = []byte(`"` + cols[j] + `"`)
 			} else {
-				value = gen.genFieldValue(cols[j], field)
-				gen.checkValue(value, field)
+				bytes = []byte(cols[j])
 			}
-			buff.WriteString(sp + "\"" + field.Name + "\":" + value)
-			sp = ","
+			err := json.Unmarshal(bytes, &jo)
+			if err != nil {
+				fmt.Printf("error: line[%d] %s: %s 转换为%s 失败\n", currentLine, field.Name, cols[j], cfgdef.GetFullTypeName(field.Type, field.IsArray))
+			} else {
+				buff.WriteString(sp + "\"" + field.Name + "\":" + gen.genFieldValue2(jo, field))
+				sp = ","
+			}
+			/*
+				var value string
+				if field.IsArray {
+					value = gen.genArrayValue(cols[j], field)
+					gen.checkArray(value, field)
+				} else {
+					value = gen.genFieldValue(cols[j], field)
+					gen.checkValue(value, field)
+				}
+				buff.WriteString(sp + "\"" + field.Name + "\":" + value)
+				sp = ","
+			*/
 		}
 	}
 	buff.WriteString("}")
