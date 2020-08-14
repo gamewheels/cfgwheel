@@ -396,10 +396,20 @@ func (gen *JSONGen) genStructValue(cols []string, structDef *cfgdef.TableDef) st
 			} else if field.IsEnum {
 				s := gen.genEnumValue(cols[j], field)
 				bytes = []byte(s)
+			} else if field.Type == "bool" {
+				s := cfgdef.Trim(strings.ToLower(cols[j]))
+				if s == "" {
+					s = "false"
+				}
+				bytes = []byte(s)
 			} else if field.Type == "string" {
 				bytes, _ = json.Marshal(cols[j])
 			} else {
-				bytes = []byte(cols[j])
+				s := cfgdef.Trim(cols[j])
+				if s == "" {
+					s = "0"
+				}
+				bytes = []byte(s)
 			}
 			err := json.Unmarshal(bytes, &jo)
 			if err != nil {
