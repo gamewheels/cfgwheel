@@ -82,6 +82,9 @@ func (gen *JSONGen) genEnumValue(s string, field *cfgdef.FieldDef) string {
 	enumDef, ok := gen.cfgMap.EnumMap[field.Type]
 	if ok {
 		s = cfgdef.Trim(s)
+		if s == "" {
+			s = enumDef.Items[0].Name
+		}
 		value, ok := enumDef.ItemsMap[s]
 		if ok {
 			return value.Value
@@ -390,8 +393,11 @@ func (gen *JSONGen) genStructValue(cols []string, structDef *cfgdef.TableDef) st
 					s = "null"
 				}
 				bytes = []byte(s)
+			} else if field.IsEnum {
+				s := gen.genEnumValue(cols[j], field)
+				bytes = []byte(s)
 			} else if field.Type == "string" {
-				bytes = []byte(`"` + cols[j] + `"`)
+				bytes, _ = json.Marshal(cols[j])
 			} else {
 				bytes = []byte(cols[j])
 			}
