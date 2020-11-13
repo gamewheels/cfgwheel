@@ -235,7 +235,7 @@ func repairPath(p *string, create bool) {
 	}
 }
 
-//根据自己的清空修改吧
+//根据自己的情况修改吧
 func main() {
 	/*
 		flag.StringVar(&cfgdef.ExportFlags.XLSPath, "xls", "./excel/", "Excel配置源路径")
