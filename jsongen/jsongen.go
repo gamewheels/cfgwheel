@@ -141,6 +141,9 @@ func toIntValue(s string) string {
 func toUIntValue(s string) string {
 	var value uint64
 	s = cfgdef.Trim(s)
+	if s == "" {
+		return "0"
+	}
 	err := json.Unmarshal([]byte(s), &value)
 	if err == nil {
 		return s
@@ -412,24 +415,19 @@ func (gen *JSONGen) genStructValue(cols []string, structDef *cfgdef.TableDef) st
 				bytes = []byte(s)
 			}
 			err := json.Unmarshal(bytes, &jo)
+			var value string
 			if err != nil {
 				fmt.Printf("error: line[%d] %s: %s 转换为%s 失败\n", currentLine, field.Name, cols[j], cfgdef.GetFullTypeName(field.Type, field.IsArray))
 			} else {
-				buff.WriteString(sp + "\"" + field.Name + "\":" + gen.genFieldValue2(jo, field))
-				sp = ","
-			}
-			/*
-				var value string
+				value = gen.genFieldValue2(jo, field)
 				if field.IsArray {
-					value = gen.genArrayValue(cols[j], field)
 					gen.checkArray(value, field)
 				} else {
-					value = gen.genFieldValue(cols[j], field)
 					gen.checkValue(value, field)
 				}
 				buff.WriteString(sp + "\"" + field.Name + "\":" + value)
 				sp = ","
-			*/
+			}
 		}
 	}
 	buff.WriteString("}")
