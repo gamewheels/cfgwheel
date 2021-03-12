@@ -437,8 +437,10 @@ func (gen *JSONGen) genStructValue(cols []string, structDef *cfgdef.TableDef) st
 //外键关联检查
 func (gen *JSONGen) checkFTable(s string, field *cfgdef.FieldDef) {
 	if ft, ok := gen.cfgMap.TableMap[field.FTable+"Table"]; ok {
-		if _, ok := ft.DataMap[s]; !ok {
-			fmt.Println("error: 没找到", field.FTable, s)
+		if s != "0" {
+			if _, ok := ft.DataMap[s]; !ok {
+				fmt.Println("error: 没找到", field.FTable, s)
+			}
 		}
 	} else {
 		fmt.Println("error: 缺少外键关联表", field.FTable)
